@@ -6,132 +6,105 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 /* ===== GLOBAL ===== */
-* { margin:0; padding:0; box-sizing:border-box; }
+*{margin:0;padding:0;box-sizing:border-box;}
 body{
   font-family:'Inter',sans-serif;
   color:white;
   background:#02030a;
-  overflow-x:hidden;
+  overflow:hidden;
   min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:20px;
-  transition:transform 0.1s ease;
 }
-
-/* ===== HEADINGS ===== */
 h1,h2{font-family:'Orbitron',sans-serif;}
-h1{letter-spacing:3px; font-size:2.2rem; margin-bottom:20px; color:#00ffa2; text-shadow:0 0 15px #00ffa2;}
-h2{font-size:1.4rem; margin-bottom:10px; color:#00e0ff; text-shadow:0 0 8px #00e0ff;}
-
-/* ===== CONTAINER / PANELS ===== */
+h1{letter-spacing:3px;font-size:2rem;color:#00ffa2;text-shadow:0 0 15px #00ffa2;}
+h2{font-size:1.2rem;margin-bottom:10px;color:#00e0ff;text-shadow:0 0 8px #00e0ff;}
 .section{
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.1);
   backdrop-filter:blur(15px);
   border-radius:16px;
-  padding:25px 30px;
-  width:90%;
-  max-width:600px;
-  margin:25px 0;
+  padding:20px;
+  margin:15px;
+  display:inline-block;
+  vertical-align:top;
   box-shadow:0 0 20px rgba(0,255,170,0.15);
-  transition:0.3s;
+  min-width:280px;
 }
-.section:hover{box-shadow:0 0 35px rgba(0,255,170,0.3);}
-
-/* ===== PROGRESS BAR ===== */
-.progress{height:18px; background:rgba(255,255,255,0.1); border-radius:20px; overflow:hidden; margin:8px 0;}
-.bar{height:100%; background:linear-gradient(90deg,#00ffa2,#00e0ff); width:0%; transition:width 0.5s ease; border-radius:20px;}
-
-/* ===== BUTTONS ===== */
 button{
-  margin:5px 3px;
-  padding:8px 16px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(90deg,#00ffa2,#00e0ff);
-  color:#02030a;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.3s;
+  margin:5px 3px;padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(90deg,#00ffa2,#00e0ff);color:#02030a;font-weight:600;cursor:pointer;transition:0.2s;
 }
-button:hover{opacity:0.85; transform:translateY(-2px);}
-a button{text-decoration:none;}
-
-/* ===== LISTS ===== */
-ul{list-style:none; padding:0; margin-top:5px;}
-ul li{margin:6px 0; font-weight:500; color:#00ffcc; text-shadow:0 0 4px #00ffcc;}
-
-/* ===== MOTIVATIONAL ===== */
-#motivational{margin-top:15px; font-size:1rem; color:#00ffa2; opacity:0.85; font-style:italic; text-shadow:0 0 4px #00ffa2;}
-
-/* ===== STAR CANVAS ===== */
-canvas{position:fixed; top:0; left:0; z-index:-1;}
-
-/* ===== MOBILE ===== */
-@media(max-width:600px){
-  h1{font-size:1.6rem;}
-  h2{font-size:1.1rem;}
-  .section{padding:18px 20px;}
-  button{padding:6px 12px;}
-}
+button:hover{opacity:0.85;transform:translateY(-1px);}
+canvas{position:fixed;top:0;left:0;z-index:-1;}
+ul{list-style:none;padding:0;}
+ul li{margin:5px 0;color:#00ffcc;text-shadow:0 0 4px #00ffcc;font-weight:500;}
+#motivational{margin-top:10px;font-size:1rem;color:#00ffa2;font-style:italic;text-shadow:0 0 4px #00ffa2;}
+/* Layout */
+#mainContainer{display:flex;justify-content:center;align-items:flex-start;flex-wrap:wrap;}
+#timerPanel{display:flex;flex-direction:column;align-items:center;}
+#calendar{display:grid;grid-template-columns:repeat(7,30px);grid-gap:4px;margin-top:8px;}
+.dayBlock{width:30px;height:30px;border-radius:4px;background:rgba(0,255,170,0.2);}
+#sidebar{position:fixed;top:0;left:-300px;width:300px;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(15px);color:white;padding:20px;transition:0.3s;overflow-y:auto;}
+#sidebar h2{color:#00e0ff;text-shadow:0 0 8px #00e0ff;}
+#sidebarToggle{position:fixed;top:15px;left:15px;font-size:1.5rem;background:none;border:none;color:#00ffa2;cursor:pointer;z-index:1000;text-shadow:0 0 8px #00ffa2;}
+#subjectSelect, #sessionInput, #breakInput{margin:5px;padding:4px;border-radius:6px;border:none;}
+@media(max-width:900px){#mainContainer{flex-direction:column;align-items:center;}#sidebar{width:80%;left:-80%;}}
 </style>
 </head>
 <body>
+<button id="sidebarToggle">≡</button>
+<div id="sidebar"><h2>Exam Timetable</h2><ul id="timetable"></ul></div>
 
 <h1>GCSE DASHBOARD</h1>
-<div id="countdown" class="section"></div>
+<div id="mainContainer">
+  <div class="section" id="countdownPanel">
+    <h2>Next Exam</h2>
+    <div id="countdown"></div>
+    <div id="nextExam"></div>
+    <div id="motivational"></div>
+  </div>
 
-<div class="section">
-<h2>Next Exam</h2>
-<div id="nextExam"></div>
+  <div class="section" id="timerPanel">
+    <h2>Revision Timer</h2>
+    <select id="subjectSelect">
+      <option value="Maths">Maths</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Physics">Physics</option>
+    </select>
+    <div>
+      <label>Session (min): <input id="sessionInput" type="number" value="25" min="5" max="120"></label>
+    </div>
+    <div>
+      <label>Break (min): <input id="breakInput" type="number" value="5" min="1" max="30"></label>
+    </div>
+    <div id="timerDisplay" style="font-size:1.5rem;margin:10px 0;">25:00</div>
+    <button id="startStopTimer">Start</button>
+    <h2>Today's Revision Calendar</h2>
+    <div id="calendar"></div>
+  </div>
 </div>
 
-<div class="section">
-<h2>Revision Tracker</h2>
-<p>Maths</p>
-<div class="progress"><div id="mathBar" class="bar"></div></div>
-<button onclick="addProgress('math')">+1 session</button>
-
-<p>Chemistry</p>
-<div class="progress"><div id="chemBar" class="bar"></div></div>
-<button onclick="addProgress('chem')">+1 session</button>
-
-<p>Physics</p>
-<div class="progress"><div id="physBar" class="bar"></div></div>
-<button onclick="addProgress('phys')">+1 session</button>
-</div>
-
-<div class="section">
-<h2>Today's Revision Tasks</h2>
-<ul id="tasks"></ul>
-</div>
-
-<div class="section">
-<h2>Exam Timetable</h2>
-<ul id="timetable"></ul>
-</div>
-
-<div class="section">
-<h2>Revision Links</h2>
-<a href="https://www.bbc.co.uk/bitesize" target="_blank"><button>BBC Bitesize</button></a>
-<a href="https://www.physicsandmathstutor.com" target="_blank"><button>Physics & Maths Tutor</button></a>
-<a href="https://corbettmaths.com" target="_blank"><button>Corbett Maths</button></a>
-</div>
-
-<div id="motivational"></div>
 <canvas id="stars"></canvas>
 
 <script>
-// ===== EXAM COUNTDOWN =====
+// ===== Exam Data =====
 const examList=[
   {name:"Maths Paper 1", date:"2026-05-11T09:00"},
   {name:"Chemistry Paper 1", date:"2026-05-14T09:00"},
   {name:"Maths Paper 2", date:"2026-05-18T09:00"},
   {name:"Physics Paper 1", date:"2026-05-19T09:00"}
 ];
+const timetableEl=document.getElementById("timetable");
+examList.forEach(ex=>{
+  let li=document.createElement("li");
+  li.textContent=`${ex.name} — ${new Date(ex.date).toLocaleDateString()}`;
+  timetableEl.appendChild(li);
+});
 
+// ===== Sidebar =====
+const sidebar=document.getElementById("sidebar");
+const toggle=document.getElementById("sidebarToggle");
+toggle.addEventListener("click",()=>{sidebar.style.left=(sidebar.style.left==="0px"?"-300px":"0px");});
+
+// ===== Countdown =====
 function updateCountdown(){
   const now=new Date();
   let nextExam=examList.find(e=>new Date(e.date)>now)||examList[0];
@@ -140,75 +113,35 @@ function updateCountdown(){
   let hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
   let mins=Math.floor((diff%(1000*60*60))/(1000*60));
   let secs=Math.floor((diff%(1000*60))/1000);
-  document.getElementById("countdown").innerHTML=`<h2>${days}d ${hours}h ${mins}m ${secs}s until next exam</h2>`;
+  document.getElementById("countdown").innerHTML=`<strong>${days}d ${hours}h ${mins}m ${secs}s</strong> until next exam`;
   document.getElementById("nextExam").innerHTML=`${nextExam.name} — ${new Date(nextExam.date).toLocaleString()}`;
 }
 setInterval(updateCountdown,1000);
 updateCountdown();
 
-// ===== EXAM TIMETABLE =====
-const timetableEl=document.getElementById("timetable");
-examList.forEach(ex=>{
-  let li=document.createElement("li");
-  li.textContent=`${ex.name} — ${new Date(ex.date).toLocaleDateString()}`;
-  timetableEl.appendChild(li);
-});
-
-// ===== DAILY TASKS =====
-const tasksPool=["20 algebra questions","revise chemical bonding","watch physics waves video","review flashcards","past paper practice"];
-function generateTasks(){
-  const tasksEl=document.getElementById("tasks");
-  tasksEl.innerHTML="";
-  let used=[];
-  while(used.length<3){
-    let t=tasksPool[Math.floor(Math.random()*tasksPool.length)];
-    if(!used.includes(t)) used.push(t);
-  }
-  used.forEach(task=>{
-    let li=document.createElement("li");
-    li.textContent=task;
-    tasksEl.appendChild(li);
-  });
-}
-generateTasks();
-
-// ===== REVISION TRACKER =====
-let progress=JSON.parse(localStorage.getItem("progress"))||{math:0,chem:0,phys:0};
-function updateProgressBars(){
-  document.getElementById("mathBar").style.width=progress.math*10+"%";
-  document.getElementById("chemBar").style.width=progress.chem*10+"%";
-  document.getElementById("physBar").style.width=progress.phys*10+"%";
-}
-function addProgress(sub){if(progress[sub]<10){progress[sub]++;localStorage.setItem("progress",JSON.stringify(progress));updateProgressBars();}}
-updateProgressBars();
-
-// ===== MOTIVATIONAL MESSAGES =====
+// ===== Motivational Messages =====
 const messages=["Future you will thank you for revising today.","Every hour counts! Keep going.","Grade 7+ is closer than you think.","LOCK IN — no distractions!","Revision now, rewards later."];
 function updateMotivation(){document.getElementById("motivational").textContent=messages[Math.floor(Math.random()*messages.length)];}
 setInterval(updateMotivation,10000);
 updateMotivation();
 
-// ===== STAR BACKGROUND =====
+// ===== Star Background =====
 const canvas=document.getElementById("stars");
 const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
-
 let stars=[];
-for(let i=0;i<200;i++){
+for(let i=0;i<250;i++){
   stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2,speedX:(Math.random()-0.5)*0.2,speedY:(Math.random()-0.5)*0.2});
 }
-
 function animateStars(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   let now=new Date();
   let daysLeft=(new Date(examList[0].date)-now)/(1000*60*60*24);
   let glow=daysLeft<10?1.8:daysLeft<20?1.3:1;
   let chaos=daysLeft<5?4:daysLeft<2?8:0;
-
   stars.forEach(s=>{
-    s.x+=s.speedX;
-    s.y+=s.speedY;
+    s.x+=s.speedX;s.y+=s.speedY;
     if(daysLeft<10){s.x+=s.speedX*2;s.y+=s.speedY*2;}
     if(s.x<0||s.x>canvas.width) s.speedX*=-1;
     if(s.y<0||s.y>canvas.height) s.speedY*=-1;
@@ -217,17 +150,73 @@ function animateStars(){
     ctx.fillStyle=`rgba(0,255,200,${glow})`;
     ctx.fill();
   });
-
-  if(chaos>0){
-    document.body.style.transform=`translate(${(Math.random()-0.5)*chaos}px, ${(Math.random()-0.5)*chaos}px)`;
-    ctx.fillStyle="rgba(255,0,0,0.03)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-  }else{document.body.style.transform="translate(0,0)";}
-
+  if(chaos>0){document.body.style.transform=`translate(${(Math.random()-0.5)*chaos}px, ${(Math.random()-0.5)*chaos}px)`;}else{document.body.style.transform="translate(0,0)";}
   requestAnimationFrame(animateStars);
 }
 animateStars();
 window.addEventListener("resize",()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+
+// ===== Revision Timer =====
+let timerInterval=null;
+let timerRunning=false;
+let timerTime=0;
+let breakTime=false;
+let currentSubject="Maths";
+let calendarData=JSON.parse(localStorage.getItem("calendarData"))||{};
+const subjectSelect=document.getElementById("subjectSelect");
+subjectSelect.addEventListener("change",()=>{currentSubject=subjectSelect.value;});
+function updateCalendar(){
+  const calendar=document.getElementById("calendar");
+  calendar.innerHTML="";
+  const today=new Date();
+  for(let i=6;i>=0;i--){
+    let day=new Date();
+    day.setDate(today.getDate()-i);
+    let ymd=day.toISOString().slice(0,10);
+    let block=document.createElement("div");
+    block.className="dayBlock";
+    let color="";
+    if(calendarData[ymd]&&calendarData[ymd][currentSubject]){
+      let v=calendarData[ymd][currentSubject];
+      let intensity=Math.min(1,v/3);
+      color=`rgba(0,255,170,${intensity})`;
+      block.style.background=color;
+    }
+    calendar.appendChild(block);
+  }
+}
+updateCalendar();
+function startStopTimer(){
+  if(timerRunning){clearInterval(timerInterval);timerRunning=false;document.getElementById("startStopTimer").textContent="Start";}
+  else{
+    let sessionLength=parseInt(document.getElementById("sessionInput").value);
+    let breakLength=parseInt(document.getElementById("breakInput").value);
+    timerTime=sessionLength*60;
+    breakTime=false;
+    timerInterval=setInterval(()=>{timerTick(sessionLength,breakLength);},1000);
+    timerRunning=true;
+    document.getElementById("startStopTimer").textContent="Stop";
+  }
+}
+document.getElementById("startStopTimer").addEventListener("click",startStopTimer);
+function timerTick(sessionLength,breakLength){
+  let min=Math.floor(timerTime/60);
+  let sec=timerTime%60;
+  document.getElementById("timerDisplay").textContent=`${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+  timerTime--;
+  if(timerTime<0){
+    if(!breakTime){timerTime=breakLength*60; breakTime=true;}
+    else{timerTime=sessionLength*60; breakTime=false; 
+      // save session to calendar
+      const today=new Date().toISOString().slice(0,10);
+      if(!calendarData[today])calendarData[today]={};
+      if(!calendarData[today][currentSubject])calendarData[today][currentSubject]=0;
+      calendarData[today][currentSubject]++;
+      localStorage.setItem("calendarData",JSON.stringify(calendarData));
+      updateCalendar();
+    }
+  }
+}
 </script>
 </body>
 </html>
