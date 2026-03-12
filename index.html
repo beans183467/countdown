@@ -5,29 +5,83 @@
 <title>GCSE Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
+/* ===== GLOBAL ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
 body{
-  margin:0; padding:0; font-family:'Inter',sans-serif; color:white; text-align:center; overflow-x:hidden; background:#02030a;
+  font-family:'Inter',sans-serif;
+  color:white;
+  background:#02030a;
+  overflow-x:hidden;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+  transition:transform 0.1s ease;
 }
+
+/* ===== HEADINGS ===== */
 h1,h2{font-family:'Orbitron',sans-serif;}
-.section{margin:40px 0;}
-.progress{height:16px; background:#333; border-radius:20px; overflow:hidden; margin:5px 0;}
-.bar{height:100%; background:#00ffa2; width:0%;}
-button{margin:5px;padding:6px 14px;border:none;border-radius:6px;background:#00ffa2;color:#02030a;cursor:pointer;}
-a button:hover{opacity:0.9;}
-canvas{position:fixed;top:0;left:0;z-index:-1;}
-ul{list-style:none;padding:0;}
-ul li{margin:6px 0;}
-#motivational{margin-top:20px;font-size:1rem;opacity:0.8;}
+h1{letter-spacing:3px; font-size:2.2rem; margin-bottom:20px; color:#00ffa2; text-shadow:0 0 15px #00ffa2;}
+h2{font-size:1.4rem; margin-bottom:10px; color:#00e0ff; text-shadow:0 0 8px #00e0ff;}
+
+/* ===== CONTAINER / PANELS ===== */
+.section{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(15px);
+  border-radius:16px;
+  padding:25px 30px;
+  width:90%;
+  max-width:600px;
+  margin:25px 0;
+  box-shadow:0 0 20px rgba(0,255,170,0.15);
+  transition:0.3s;
+}
+.section:hover{box-shadow:0 0 35px rgba(0,255,170,0.3);}
+
+/* ===== PROGRESS BAR ===== */
+.progress{height:18px; background:rgba(255,255,255,0.1); border-radius:20px; overflow:hidden; margin:8px 0;}
+.bar{height:100%; background:linear-gradient(90deg,#00ffa2,#00e0ff); width:0%; transition:width 0.5s ease; border-radius:20px;}
+
+/* ===== BUTTONS ===== */
+button{
+  margin:5px 3px;
+  padding:8px 16px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(90deg,#00ffa2,#00e0ff);
+  color:#02030a;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{opacity:0.85; transform:translateY(-2px);}
+a button{text-decoration:none;}
+
+/* ===== LISTS ===== */
+ul{list-style:none; padding:0; margin-top:5px;}
+ul li{margin:6px 0; font-weight:500; color:#00ffcc; text-shadow:0 0 4px #00ffcc;}
+
+/* ===== MOTIVATIONAL ===== */
+#motivational{margin-top:15px; font-size:1rem; color:#00ffa2; opacity:0.85; font-style:italic; text-shadow:0 0 4px #00ffa2;}
+
+/* ===== STAR CANVAS ===== */
+canvas{position:fixed; top:0; left:0; z-index:-1;}
+
+/* ===== MOBILE ===== */
 @media(max-width:600px){
-  h1{font-size:1.8rem;}
-  h2{font-size:1.2rem;}
+  h1{font-size:1.6rem;}
+  h2{font-size:1.1rem;}
+  .section{padding:18px 20px;}
+  button{padding:6px 12px;}
 }
 </style>
 </head>
 <body>
 
 <h1>GCSE DASHBOARD</h1>
-<div id="countdown"></div>
+<div id="countdown" class="section"></div>
 
 <div class="section">
 <h2>Next Exam</h2>
@@ -36,13 +90,15 @@ ul li{margin:6px 0;}
 
 <div class="section">
 <h2>Revision Tracker</h2>
-Maths
+<p>Maths</p>
 <div class="progress"><div id="mathBar" class="bar"></div></div>
 <button onclick="addProgress('math')">+1 session</button>
-Chemistry
+
+<p>Chemistry</p>
 <div class="progress"><div id="chemBar" class="bar"></div></div>
 <button onclick="addProgress('chem')">+1 session</button>
-Physics
+
+<p>Physics</p>
 <div class="progress"><div id="physBar" class="bar"></div></div>
 <button onclick="addProgress('phys')">+1 session</button>
 </div>
@@ -65,12 +121,11 @@ Physics
 </div>
 
 <div id="motivational"></div>
-
 <canvas id="stars"></canvas>
 
 <script>
-// ===== Exam Countdown =====
-const examList = [
+// ===== EXAM COUNTDOWN =====
+const examList=[
   {name:"Maths Paper 1", date:"2026-05-11T09:00"},
   {name:"Chemistry Paper 1", date:"2026-05-14T09:00"},
   {name:"Maths Paper 2", date:"2026-05-18T09:00"},
@@ -78,105 +133,83 @@ const examList = [
 ];
 
 function updateCountdown(){
-  const now = new Date();
-  let nextExam = examList.find(e => new Date(e.date) > now) || examList[0];
-  let diff = new Date(nextExam.date) - now;
-  let days = Math.floor(diff/(1000*60*60*24));
-  let hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-  let mins = Math.floor((diff%(1000*60*60))/(1000*60));
-  let secs = Math.floor((diff%(1000*60))/1000);
+  const now=new Date();
+  let nextExam=examList.find(e=>new Date(e.date)>now)||examList[0];
+  let diff=new Date(nextExam.date)-now;
+  let days=Math.floor(diff/(1000*60*60*24));
+  let hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  let mins=Math.floor((diff%(1000*60*60))/(1000*60));
+  let secs=Math.floor((diff%(1000*60))/1000);
   document.getElementById("countdown").innerHTML=`<h2>${days}d ${hours}h ${mins}m ${secs}s until next exam</h2>`;
   document.getElementById("nextExam").innerHTML=`${nextExam.name} — ${new Date(nextExam.date).toLocaleString()}`;
 }
 setInterval(updateCountdown,1000);
 updateCountdown();
 
-// ===== Exam Timetable =====
-const timetableEl = document.getElementById("timetable");
-examList.forEach(ex => {
-  let li = document.createElement("li");
-  li.textContent = `${ex.name} — ${new Date(ex.date).toLocaleDateString()}`;
+// ===== EXAM TIMETABLE =====
+const timetableEl=document.getElementById("timetable");
+examList.forEach(ex=>{
+  let li=document.createElement("li");
+  li.textContent=`${ex.name} — ${new Date(ex.date).toLocaleDateString()}`;
   timetableEl.appendChild(li);
 });
 
-// ===== Daily Revision Tasks =====
-const tasksPool = [
-  "20 algebra questions",
-  "revise chemical bonding",
-  "watch physics waves video",
-  "review flashcards",
-  "past paper practice"
-];
+// ===== DAILY TASKS =====
+const tasksPool=["20 algebra questions","revise chemical bonding","watch physics waves video","review flashcards","past paper practice"];
 function generateTasks(){
-  const tasksEl = document.getElementById("tasks");
+  const tasksEl=document.getElementById("tasks");
   tasksEl.innerHTML="";
   let used=[];
   while(used.length<3){
-    let t = tasksPool[Math.floor(Math.random()*tasksPool.length)];
+    let t=tasksPool[Math.floor(Math.random()*tasksPool.length)];
     if(!used.includes(t)) used.push(t);
   }
   used.forEach(task=>{
-    let li = document.createElement("li"); li.textContent = task;
+    let li=document.createElement("li");
+    li.textContent=task;
     tasksEl.appendChild(li);
   });
 }
 generateTasks();
 
-// ===== Revision Tracker =====
-let progress = JSON.parse(localStorage.getItem("progress")) || {math:0,chem:0,phys:0};
+// ===== REVISION TRACKER =====
+let progress=JSON.parse(localStorage.getItem("progress"))||{math:0,chem:0,phys:0};
 function updateProgressBars(){
-  document.getElementById("mathBar").style.width = progress.math*10+"%";
-  document.getElementById("chemBar").style.width = progress.chem*10+"%";
-  document.getElementById("physBar").style.width = progress.phys*10+"%";
+  document.getElementById("mathBar").style.width=progress.math*10+"%";
+  document.getElementById("chemBar").style.width=progress.chem*10+"%";
+  document.getElementById("physBar").style.width=progress.phys*10+"%";
 }
-function addProgress(subject){
-  if(progress[subject]<10){progress[subject]++; localStorage.setItem("progress", JSON.stringify(progress)); updateProgressBars();}
-}
+function addProgress(sub){if(progress[sub]<10){progress[sub]++;localStorage.setItem("progress",JSON.stringify(progress));updateProgressBars();}}
 updateProgressBars();
 
-// ===== Motivational Messages =====
-const messages = [
-  "Future you will thank you for revising today.",
-  "Every hour counts! Keep going.",
-  "Grade 7+ is closer than you think.",
-  "LOCK IN — no distractions!",
-  "Revision now, rewards later."
-];
-function updateMotivation(){
-  document.getElementById("motivational").textContent=messages[Math.floor(Math.random()*messages.length)];
-}
+// ===== MOTIVATIONAL MESSAGES =====
+const messages=["Future you will thank you for revising today.","Every hour counts! Keep going.","Grade 7+ is closer than you think.","LOCK IN — no distractions!","Revision now, rewards later."];
+function updateMotivation(){document.getElementById("motivational").textContent=messages[Math.floor(Math.random()*messages.length)];}
 setInterval(updateMotivation,10000);
 updateMotivation();
 
-// ===== Animated Star Background =====
-const canvas = document.getElementById("stars");
-const ctx = canvas.getContext("2d");
+// ===== STAR BACKGROUND =====
+const canvas=document.getElementById("stars");
+const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 
-let stars = [];
+let stars=[];
 for(let i=0;i<200;i++){
-  stars.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    size:Math.random()*2,
-    speedX:(Math.random()-0.5)*0.2,
-    speedY:(Math.random()-0.5)*0.2
-  });
+  stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2,speedX:(Math.random()-0.5)*0.2,speedY:(Math.random()-0.5)*0.2});
 }
 
 function animateStars(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  let now = new Date();
-  let daysLeft = (new Date(examList[0].date)-now)/(1000*60*60*24);
-
-  let glow = daysLeft<10?1.8:daysLeft<20?1.3:1;
-  let chaos = daysLeft<5?4:daysLeft<2?8:0;
+  let now=new Date();
+  let daysLeft=(new Date(examList[0].date)-now)/(1000*60*60*24);
+  let glow=daysLeft<10?1.8:daysLeft<20?1.3:1;
+  let chaos=daysLeft<5?4:daysLeft<2?8:0;
 
   stars.forEach(s=>{
     s.x+=s.speedX;
     s.y+=s.speedY;
-    if(daysLeft<10){s.x+=s.speedX*2; s.y+=s.speedY*2;}
+    if(daysLeft<10){s.x+=s.speedX*2;s.y+=s.speedY*2;}
     if(s.x<0||s.x>canvas.width) s.speedX*=-1;
     if(s.y<0||s.y>canvas.height) s.speedY*=-1;
     ctx.beginPath();
@@ -189,15 +222,12 @@ function animateStars(){
     document.body.style.transform=`translate(${(Math.random()-0.5)*chaos}px, ${(Math.random()-0.5)*chaos}px)`;
     ctx.fillStyle="rgba(255,0,0,0.03)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-  }else{
-    document.body.style.transform="translate(0,0)";
-  }
+  }else{document.body.style.transform="translate(0,0)";}
 
   requestAnimationFrame(animateStars);
 }
 animateStars();
 window.addEventListener("resize",()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
 </script>
-
 </body>
 </html>
