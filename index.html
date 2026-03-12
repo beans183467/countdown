@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GCSE Countdown</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+font-family:'Inter',sans-serif;
+color:white;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#02030a;
+overflow:hidden;
+}
+
+/* ALERT BANNER */
+
+#alertBanner{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+padding:14px;
+text-align:center;
+font-family:'Orbitron';
+font-size:1.1rem;
+letter-spacing:2px;
+color:white;
+transform:translateY(-100%);
+transition:transform 0.6s ease;
+z-index:1000;
+}
+
+#alertBanner.show{transform:translateY(0);}
+
+.warning30{background:linear-gradient(90deg,#ffcc00,#ff6600);box-shadow:0 0 20px orange;}
+.warning20{background:linear-gradient(90deg,#ff6600,#ff0000);box-shadow:0 0 25px red;}
+.warning10{
+background:linear-gradient(90deg,#ff0000,#990000);
+box-shadow:0 0 35px red;
+animation:panicFlash 0.8s infinite alternate;
+}
+
+@keyframes panicFlash{
+from{filter:brightness(1)}
+to{filter:brightness(1.4)}
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+.container{text-align:center;width:900px;max-width:95%;}
+
+h1{
+font-family:'Orbitron';
+font-size:3rem;
+letter-spacing:3px;
+margin-bottom:10px;
+text-shadow:0 0 15px #00ffcc;
+}
+
+.date{opacity:0.7;margin-bottom:40px;}
+
+.timer{
+display:flex;
+justify-content:center;
+gap:20px;
+margin-bottom:40px;
+flex-wrap:wrap;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.1);
+backdrop-filter:blur(15px);
+padding:25px;
+border-radius:14px;
+width:130px;
+box-shadow:0 0 20px rgba(0,255,170,0.15);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-6px);
+box-shadow:0 0 30px rgba(0,255,170,0.35);
+}
+
+.number{font-family:'Orbitron';font-size:2.5rem;}
+.label{margin-top:6px;font-size:0.85rem;opacity:0.7;}
+
+.panel{
+background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.12);
+border-radius:16px;
+padding:35px;
+backdrop-filter:blur(20px);
+box-shadow:0 0 30px rgba(0,255,170,0.12);
+}
+
+.highlight{color:#00ffa2;text-shadow:0 0 12px #00ffa2;}
+
+.progress-container{
+width:100%;
+height:18px;
+background:rgba(255,255,255,0.08);
+border-radius:20px;
+margin-top:20px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#00ffa2,#00e0ff);
+box-shadow:0 0 20px #00ffa2;
+transition:width 1s ease;
+}
+
+.percent{margin-top:12px;opacity:0.8;}
+.goal{margin-top:25px;line-height:1.6;}
+
+</style>
+</head>
+
+<body>
+
+<div id="alertBanner"></div>
+<canvas id="particles"></canvas>
+
+<div class="container">
+
+<h1>GCSE EXAM COUNTDOWN</h1>
+<div class="date" id="today"></div>
+
+<div class="timer">
+<div class="card"><div class="number" id="days">0</div><div class="label">DAYS</div></div>
+<div class="card"><div class="number" id="hours">0</div><div class="label">HOURS</div></div>
+<div class="card"><div class="number" id="mins">0</div><div class="label">MINUTES</div></div>
+<div class="card"><div class="number" id="secs">0</div><div class="label">SECONDS</div></div>
+</div>
+
+<div class="panel">
+
+<p>First exam: <span class="highlight">May 11, 2026 — 09:00</span></p>
+
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="percent" id="percentText"></div>
+
+<div class="goal">
+<span class="highlight">LOCK IN.</span><br>
+Minimum target: <span class="highlight">Grade 7+</span><br><br>
+REVISE CHEMISTRY — Current: 7-6 → Target: 7-7<br>
+REVISE MATHS — Current: 6 → Target: 7
+</div>
+
+</div>
+</div>
+
+<script>
+
+/* DOM ELEMENTS */
+
+const daysEl=document.getElementById("days");
+const hoursEl=document.getElementById("hours");
+const minsEl=document.getElementById("mins");
+const secsEl=document.getElementById("secs");
+
+const progressBar=document.getElementById("progressBar");
+const percentText=document.getElementById("percentText");
+const alertBanner=document.getElementById("alertBanner");
+
+/* COUNTDOWN */
+
+const startDate=new Date("January 1, 2026").getTime();
+const examDate=new Date("May 11, 2026 09:00").getTime();
+
+function update(){
+
+const now=Date.now();
+const remaining=examDate-now;
+
+const total=examDate-startDate;
+const passed=now-startDate;
+
+const days=Math.floor(remaining/(1000*60*60*24));
+const hours=Math.floor((remaining%(1000*60*60*24))/(1000*60*60));
+const mins=Math.floor((remaining%(1000*60*60))/(1000*60));
+const secs=Math.floor((remaining%(1000*60))/1000);
+
+daysEl.textContent=days;
+hoursEl.textContent=hours;
+minsEl.textContent=mins;
+secsEl.textContent=secs;
+
+const percent=Math.min((passed/total)*100,100);
+
+progressBar.style.width=percent+"%";
+percentText.innerText=percent.toFixed(2)+"% of preparation time used";
+
+/* ALERT */
+
+if(days<=30 && days>20){
+alertBanner.className="show warning30";
+alertBanner.innerText=`⚠ ${days} DAYS REMAINING — ENTER FOCUS MODE`;
+}
+else if(days<=20 && days>10){
+alertBanner.className="show warning20";
+alertBanner.innerText=`⚠ ${days} DAYS REMAINING — INTENSIFY REVISION`;
+}
+else if(days<=10){
+alertBanner.className="show warning10";
+alertBanner.innerText=`🚨 ${days} DAYS REMAINING — LOCK IN IMMEDIATELY`;
+}
+else{
+alertBanner.className="";
+alertBanner.innerText="";
+}
+
+}
+
+setInterval(update,1000);
+update();
+
+document.getElementById("today").innerText=new Date().toDateString();
+
+/* PARTICLE BACKGROUND */
+
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+for(let i=0;i<140;i++){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+size:Math.random()*2,
+speedX:(Math.random()-0.5)*0.3,
+speedY:(Math.random()-0.5)*0.3
+});
+}
+
+function animate(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+const days=(examDate-Date.now())/(1000*60*60*24);
+
+let glow=0.8;
+if(days<30) glow=1;
+if(days<20) glow=1.3;
+if(days<10) glow=1.8;
+
+particles.forEach(p=>{
+
+p.x+=p.speedX;
+p.y+=p.speedY;
+
+if(days<10){
+p.x+=p.speedX*1.5;
+p.y+=p.speedY*1.5;
+}
+
+if(p.x<0||p.x>canvas.width) p.speedX*=-1;
+if(p.y<0||p.y>canvas.height) p.speedY*=-1;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+ctx.fillStyle=`rgba(0,255,200,${glow})`;
+ctx.fill();
+
+});
+
+/* CHAOS SKY */
+
+if(days<10){
+ctx.fillStyle="rgba(255,0,0,0.04)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+/* SCREEN SHAKE */
+
+if(days<5){
+
+let intensity=days<2?8:4;
+
+document.body.style.transform=
+`translate(${(Math.random()-0.5)*intensity}px, ${(Math.random()-0.5)*intensity}px)`;
+
+}else{
+document.body.style.transform="translate(0,0)";
+}
+
+requestAnimationFrame(animate);
+
+}
+
+animate();
+
+window.addEventListener("resize",()=>{
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+});
+
+</script>
+
+</body>
+</html>
